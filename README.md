@@ -57,23 +57,37 @@
 ---
 
 ## 系統架構圖
-```flowchart LR
+```mermaid
+flowchart LR
 
-    subgraph "IoT Edge Layer"
-        A[Smart Sensor / Device] -->|Data Stream<br/>MQTT / HTTP| B[Embedded System<br/>ESP32]
+    subgraph 物聯網設備層
+        A[健康感測器<br/>心率、體溫、血氧] -->|MQTT / HTTP| B[ESP32控制器]
     end
 
-    subgraph "Cloud Backend Layer (FastAPI)"
-        B -->|Raw Data Payload| C{FastAPI Ingestion Endpoint}
-        C --> D[LogProcessor Module]
-        D -->|Anomaly Check & Persistence| E[(Database<br/>SensorDataLog)]
-        D -->|Trigger Alert| F[LineService Module]
+    subgraph 雲端後端系統
+        B -->|即時健康資料| C[FastAPI 資料接收端]
+
+        C --> D[資料處理模組]
+
+        D -->|資料儲存| E[(Firebase 雲端資料庫)]
+
+        D -->|異常偵測| F[警報通知模組]
     end
 
-    subgraph "External Notification Service"
-        F -->|Push Message API| G[LINE Messaging API]
-        G --> H[Caregiver Mobile Device<br/>LINE App]
-        H -->|Webhook Event| C
+    subgraph 通知與互動服務
+        F -->|推播通知| G[LINE Messaging API]
+
+        G --> H[家屬／照護人員 LINE]
+        
+        H -->|查詢健康資料| C
+    end
+
+    subgraph AI智慧客服系統
+        I[AI健康照護客服機器人]
+        
+        I -->|健康資訊諮詢| H
+        
+        I -->|讀取健康數據| E
     end
 ```
 ## 系統運作與數據流程 
