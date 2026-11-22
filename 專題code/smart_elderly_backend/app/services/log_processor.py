@@ -1,5 +1,36 @@
+# =========================================================================
+#  LogProcessor 服務模組 (Sensor Data & Alert Processing)
+# =========================================================================
+"""
+本模組的職責是接收來自 IoT 設備的原始數據和安全檢查結果，
+執行數據驗證、異常偵測 (Outlier Detection)，並決定是否需觸發 LINE 推播。
+
+配置說明 
+
+本模組的運作嚴重依賴於外部配置 (例如 .env 文件)。
+在執行此程式碼前，您必須先確保您的 .env 文件中包含了所有以下資訊。
+
+=== 獲取資訊的來源 ===
+
+1.  LINE 相關資訊 (LINE Developers Console):
+    - LINE_CHANNEL_ACCESS_TOKEN: 從 LINE Messaging API 設定中取得，用於發送訊息。
+    - LINE_CHANNEL_SECRET: 從 LINE Messaging API 設定中取得，用於驗證 Webhook 請求的真實性。
+    - TARGET_USER_ID: 從您希望接收警報的照護者 LINE 帳號中獲取，這是系統推送警報的**目標 ID**。
+    - WEBHOOK_URL: 您的 FastAPI 服務的公網 HTTPS 地址 (您在部署時設定)。
+
+2.  數據庫資訊 (SQLAlchemy Setup):
+    - DATABASE_URL: 您的資料庫連線字串 (例如: sqlite:///./smart_elderly.db)。
+
+3.  IoT 設備資訊 (Firmware & API Ingest):
+    - DEVICE_ID: 您為 ESP32 設備取的唯一標識，用於後端追蹤數據來源 (例如: ESP32_RoomA)。
+    - WIFI_SSID / WIFI_PASSWORD: 設備連線 Wi-Fi 的憑證。
+
+========================================================================
+"""
+
+
 # --------------------------------------------------------------------
-#                          LINE 推播流程說明：
+#                          LINE 推播流程詳細說明：
 # --------------------------------------------------------------------
 """
 1.在 LINE Developers 建立 Messaging API 頻道，取得 Channel Secret 與 Channel Access Token。   
@@ -16,17 +47,19 @@ from typing import Optional, Dict, Any
 from app.db.database import SessionLocal
 from app.db.models import SafetyCheckLog, SensorDataLog, Device 
 from app.config.config import settings
-from app.services.line_service import LineService 
+from app.services.line_service import LineService
+from smart_elderly_backend.app.services import line_service 
 
 class LogProcessor:
     """
     負責接收和處理原始數據，執行數據驗證、時間校準，並觸發高級通知。
     """
 
-    def __init__(self, line_service: LineService):
-        # 依賴注入：將 LINE 服務注入 LogProcessor
+    def __init__(self, line_service: LineService, target_user_id: str):
+        # 依賴注入：將 LINE 服務與目標用戶 ID 注入 LogProcessor
         self.line_service = line_service
-        
+        self.target_user_id = target_user_id
+
     def validate_and_process_safety_log(self, device_id: str, raw_data: dict, db_session):
         """
         接收安全檢查數據，進行格式和數值驗證，並處理數據去重。
