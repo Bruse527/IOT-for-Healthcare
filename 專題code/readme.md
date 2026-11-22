@@ -248,9 +248,3 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 - **Description:** 接收 LINE 平台發送的 Message / Event，處理雙向查詢與指令解析。
 
 ---
-
-## 團隊成員 (Team Members)
-
-- **吳冠廷** (資工二 / 11403039A) 
-- **陳柏翰** (資工二 / 11403801A) 
-- **曾政樺** (資工二 / 11403080A) 
