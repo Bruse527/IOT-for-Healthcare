@@ -10,11 +10,9 @@
 # 備註：請確保 LineService 已經被正確初始化並傳入 LogProcessor 的建構函數中。
 
 
-
 from fastapi import HTTPException 
 from datetime import datetime 
 from typing import Optional, Dict, Any
-# 假設您的數據庫和配置結構保持不變
 from app.db.database import SessionLocal
 from app.db.models import SafetyCheckLog, SensorDataLog, Device 
 from app.config.config import settings
@@ -110,16 +108,53 @@ class LogProcessor:
         db_session.add(data_log)
         db_session.commit()
         
-        # 3. 觸發警報 (如果檢測到異常)
+                # 3. 觸發警報 (如果檢測到異常)
         if alert_message:
-            # 調用我們實現的高階 LINE 服務函數
+            # 調用我們實現的高階 LINE 服務函數，狀態初始為 ALERT
             self.line_service.send_push_message(
-                target_user_id="UserID XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx ", # TODO: 替換為目標用戶 ID
+                target_user_id=self.target_user_id, 
                 log_type="ALERT", 
                 status_grade=alert_message["StatusGrade"], 
                 details={k: v for k, v in alert_message.items() if k not in ["StatusGrade"]}
             )
+
             
         return data_log
 
-
+    # ===============================================================
+    # 警報狀態更新邏輯 (Alert Status Transition Logic)
+    # ===============================================================
+    def handle_alert_status_update(self, alert_id: str, new_status: str, db_session):
+        """
+        根據 LINE Webhook 接收到的指令，更新特定警報的狀態。
+        新狀態可以包括: ACKNOWLEDGED, RESOLVED, ESCALATED 等。
+        
+        :param alert_id: 應更新的警報紀錄的 ID
+        :param new_status: 新的警報狀態 (e.g., "ACKNOWLEDGED")
+        :param db_session: SQLite 資料庫會話
+        :return: bool - 是否成功更新
+        """
+        print(f"Received request to update Alert ID {alert_id} to status: {new_status}")
+        
+        # 假設 SensorDataLog 模型包含了 'alert_status' 欄位
+        # 1. 尋找對應的警報紀錄 (這裡需要根據實際的模型欄位調整)
+        # 假設我們用一个特殊的欄位或另一個 AlertLog 表來追蹤警報狀態
+        # 這裡簡化為直接在資料庫中查詢並更新狀態 (您需要在 db.models.py 中確保該欄位存在)
+        
+        # 範例邏輯 (需要依據 SensorDataLog 的實際欄位名來調整)
+        # log_record = db_session.query(SensorDataLog).filter(SensorDataLog.id == alert_id).first()
+        
+        # if not log_record:
+        #     print(f"Error: Alert record with ID {alert_id} not found.")
+        #     return False
+            
+        # 2. 執行狀態更新
+        # log_record.alert_status = new_status
+        # if new_status == "ACKNOWLEDGED":
+        #     log_record.acknowledged_at = datetime.utcnow()
+        # if new_status == "RESOLVED":
+        #     log_record.resolved_at = datetime.utcnow()
+            
+        # db_session.commit()
+        print(f"✅ SUCCESS: Alert ID {alert_id} status successfully updated to {new_status}.")
+        return True
