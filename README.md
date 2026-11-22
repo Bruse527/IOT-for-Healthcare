@@ -57,22 +57,23 @@
 ---
 
 ## 系統架構圖
-```graph TD
-    subgraph IoT Edge Layer
-        A[Smart Sensor/Device] -->|Data Stream (MQTT/HTTP)| B(Embedded System / ESP32);
+```flowchart LR
+
+    subgraph "IoT Edge Layer"
+        A[Smart Sensor / Device] -->|Data Stream<br/>MQTT / HTTP| B[Embedded System<br/>ESP32]
     end
-    
-    subgraph Cloud Backend Layer (FastAPI)
-        B -->|Raw Data Payload| C{FastAPI Ingestion Endpoint};
-        C --> D[LogProcessor Module];
-        D -->|Anomaly Check & Persistence| E[(Database - SensorDataLog)];
-        D -->|Trigger Alert| F[LineService Module];
+
+    subgraph "Cloud Backend Layer (FastAPI)"
+        B -->|Raw Data Payload| C{FastAPI Ingestion Endpoint}
+        C --> D[LogProcessor Module]
+        D -->|Anomaly Check & Persistence| E[(Database<br/>SensorDataLog)]
+        D -->|Trigger Alert| F[LineService Module]
     end
-    
-    subgraph External Notification Service
-        F -->|API Call (Push Message)| G(LINE Messaging API);
-        G --> H[Caregiver Mobile Device / LINE App];
-        H -->|Response/Webhook Event| C;
+
+    subgraph "External Notification Service"
+        F -->|Push Message API| G[LINE Messaging API]
+        G --> H[Caregiver Mobile Device<br/>LINE App]
+        H -->|Webhook Event| C
     end
 ```
 ## 系統運作與數據流程 
