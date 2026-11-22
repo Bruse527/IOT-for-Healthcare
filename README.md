@@ -264,3 +264,33 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ---
 
+## 🔑 環境設定與啟動指南 (Configuration Guide)
+
+本專案的運作需要一系列手動輸入的敏感資訊和環境參數。請務必根據您的實際環境和業務需求，在以下位置安全地設定這些值。
+
+### 🟢 I. LINE Messaging API 服務配置 (LINE Developers Console)
+這些 Token 與 ID 必須從您的 LINE Developers Console 中取得，並安全地存放在 `.env` 文件或 `config/settings.py` 中。
+
+*   **`CHANNEL_ID`**: 頻道的唯一識別碼。
+*   **`CHANNEL_SECRET`**: 頻道密碼。用於後端驗證 Webhook 請求真實性（安全性關鍵）。
+*   **`CHANNEL_ACCESS_TOKEN`**: 存取權杖。允許 FastAPI 後端向照護者發送訊息。
+*   **`TARGET_USER_ID`**: **照護者/接收警報的目標用戶 ID**。這是系統推送警報的接收方。
+*   **`WEBHOOK_URL`**: 您的 FastAPI 服務的完整 HTTPS 公網地址。用於填寫 LINE Webhook URL。
+
+### 🔵 II. 後端服務 (FastAPI Backend) 配置
+這些參數控制伺服器和資料庫的運作方式。
+
+*   **`DATABASE_URL`**: 資料庫連線字串（例如：`sqlite:///./app.db`）。
+*   **`FASTAPI_HOST`**: 服務啟動時使用的 IP 位址 (預設: `0.0.0.0`)。
+*   **`FASTAPI_PORT`**: 服務運行的埠號 (預設: `8000`)。
+
+### 🔴 III. 邊緣運算裝置 (ESP32 Firmware) 配置
+這些參數需要在 `HeartCare_TestSketch.ino` (或相關配置檔) 中設定，以讓設備能與雲端連線。
+
+*   **`DEVICE_ID`**: **每個感測器設備的唯一標識** (例如: `ESP32_RoomA`)。這用於後端追蹤數據來源。
+*   **`WIFI_SSID` / `WIFI_PASSWORD`**: 設備連接 Wi-Fi 所需的網路名稱和密碼。
+*   **`BACKEND_API_ADDRESS`**: ESP32 用來傳送數據給 FastAPI 伺服器的 IP 和埠號。
+
+---
+**💡 提醒：** 所有敏感資訊（Token, Secret, Password）都應使用 **環境變數 (.env 文件)** 進行管理，而非直接硬編碼在程式碼中。
+
