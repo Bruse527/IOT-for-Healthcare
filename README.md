@@ -138,7 +138,7 @@ __4. 遠端通知與儲存 (Cloud Processing):__ FastAPI 接收數據並寫入 S
 | 8 | 提示 LED 燈 | 3.3V | GND | `GPIO27` |
 
 ---
-
+---
 ### 技術/框架
 | 類型 | 技術/框架 | 應用功能 |
 | 硬體與韌體層 |	ESP32 (NodeMCU-32S), C++/Arduino IDE, LittleFS	系統主控核心，負責感測數據採集、邊緣運算與本地離線快取。 |
